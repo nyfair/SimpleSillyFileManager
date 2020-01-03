@@ -8,6 +8,37 @@ class FMHandler(SimpleHTTPRequestHandler):
       self.path = self.path[:1+self.path.rfind('/')]
     super().do_GET()
 
+  def do_POST(self):
+    size = int(self.headers['content-length'])
+    boundary = self.headers['content-type'].split("=")[1].encode()
+    line = self.rfile.readline()
+    size -= len(line)
+    line = self.rfile.readline()
+    size -= len(line)
+    s = line.decode('utf-8')
+    l = s.find('filename=')
+    fn = s[l+10:-3]
+    line = self.rfile.readline()
+    size -= len(line)
+    line = self.rfile.readline()
+    size -= len(line)
+    last = self.rfile.readline()
+    size -= len(last)
+    if size > 0 and len(fn) > 0:
+      with open(fn, 'wb') as w:
+        while size > 0:
+          line = self.rfile.readline()
+          size -= len(line)
+          if boundary in line:
+            last = last[0:-1]
+            if last.endswith(b'\r'):
+                last = last[0:-1]
+            w.write(last)
+          else:
+            w.write(last)
+            last = line
+    super().do_GET()
+
   def process(self, cmd, f):
     path = self.translate_path(f)
     if cmd == 'd':
@@ -44,7 +75,10 @@ class FMHandler(SimpleHTTPRequestHandler):
     r.append('<html>\n<head>')
     r.append('<meta http-equiv="Content-Type" content="text/html">')
     r.append('<title>%s</title>\n</head>' % title)
-    r.append('<body>\n<h1>%s</h1>\n<table border=1>' % title)
+    r.append('<body>\n<h1>%s</h1>' % title)
+    r.append('<form ENCTYPE="multipart/form-data" method="post">')
+    r.append('<input name="file" type="file"/>')
+    r.append('<input type="submit" value="upload"/></form>\n<table border=1>')
     for name in list:
       fullname = os.path.join(path, name)
       link = urllib.parse.quote(name, errors='surrogatepass')
