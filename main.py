@@ -37,6 +37,8 @@ class FMHandler(SimpleHTTPRequestHandler):
           else:
             w.write(last)
             last = line
+    if len(self.path) > 2 and self.path[-2] == '?':
+      self.path = self.path[:1+self.path.rfind('/')]
     super().do_GET()
 
   def process(self, cmd, f):
@@ -49,7 +51,7 @@ class FMHandler(SimpleHTTPRequestHandler):
       subprocess.run(["7z", "a", path+'.tar', path])
     elif cmd == 'z':
       subprocess.run(["7z", "a", path+'.7z', path])
-  
+
   def calc_size(self, num):
     for x in ['B', 'KB', 'MB', 'GB', 'TB']:
       if num < 1024.0:
