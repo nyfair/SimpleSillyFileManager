@@ -43,14 +43,17 @@ class FMHandler(SimpleHTTPRequestHandler):
 
   def process(self, cmd, f):
     path = self.translate_path(f)
+    s = path.rfind('/')
+    l = path[:s]
+    r = path[s+1:]
     if cmd == 'd':
       subprocess.run(["rm", "-rf", path])
     elif cmd == 'x':
-      subprocess.run(["7z", "x", path])
+      subprocess.run(["bsdtar", "-C", l, "-xf", r])
     elif cmd == 't':
-      subprocess.run(["7z", "a", path+'.tar', path])
+      subprocess.run(["bsdtar", "-C", l, "-acf", path+'.tar', r])
     elif cmd == 'z':
-      subprocess.run(["7z", "a", path+'.7z', path])
+      subprocess.run(["bsdtar", "-C", l, "-acf", path+'.7z', r])
 
   def calc_size(self, num):
     for x in ['B', 'KB', 'MB', 'GB', 'TB']:
