@@ -2,4 +2,4 @@
 只依赖core python3，现代os开箱即用，页面没有辣鸡js，支持各种命令行浏览器
 
 ## 命令行下上传方法
-curl -i -X POST -H "Content-Type: multipart/form-data" -F "data=@{文件名}" 网页地址
+curl -i -X POST -H "Content-Type: multipart/form-data" -F "data=@{filename}" pageurl
