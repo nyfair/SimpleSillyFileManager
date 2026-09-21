@@ -1,11 +1,16 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer, HTTPStatus
+from socketserver import ThreadingMixIn
 import ctypes, html, io, os, subprocess, sys, urllib
 
 class FMHandler(SimpleHTTPRequestHandler):
   def do_GET(self):
     if len(self.path) > 2 and self.path[-2] == '?':
       self.process(self.path[-1], self.path[1:-2])
-      self.path = self.path[:1+self.path.rfind('/')]
+      clean_path = self.path[:1+self.path.rfind('/')]
+      self.send_response(HTTPStatus.SEE_OTHER)
+      self.send_header("Location", clean_path)
+      self.end_headers()
+      return
     super().do_GET()
 
   def do_POST(self):
@@ -105,4 +110,9 @@ class FMHandler(SimpleHTTPRequestHandler):
     self.end_headers()
     return f
 
-HTTPServer(('127.0.0.1', int(sys.argv[1])), FMHandler).serve_forever()
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
+if __name__ == '__main__':
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    ThreadedHTTPServer(('127.0.0.1', port), FMHandler).serve_forever()
