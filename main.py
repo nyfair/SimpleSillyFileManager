@@ -6,9 +6,8 @@ class FMHandler(SimpleHTTPRequestHandler):
   def do_GET(self):
     if len(self.path) > 2 and self.path[-2] == '?':
       self.process(self.path[-1], self.path[1:-2])
-      clean_path = self.path[:1+self.path.rfind('/')]
       self.send_response(HTTPStatus.SEE_OTHER)
-      self.send_header("Location", clean_path)
+      self.send_header('Location', '.')
       self.end_headers()
       return
     super().do_GET()
